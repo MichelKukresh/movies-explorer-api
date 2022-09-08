@@ -1,15 +1,17 @@
 const express = require('express');
-// Слушаем 3000 порт
-const cors = require('cors'); // npm i cors
-const mongoose = require('mongoose');
 
+const cors = require('cors');
+const mongoose = require('mongoose');
+const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const routesMovies = require('./routes/movies');
 const routesUsers = require('./routes/users');
 const { createUser, login } = require('./controllers/users');
-/// const router = require('express').Router(); // создали роутер
-const { PORT = 3000 } = process.env;
+
+const { PORT = 3001 } = process.env;
+
 const auth = require('./middlewares/auth');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -22,31 +24,43 @@ const limiter = rateLimit({
   max: 100,
 });
 
-// подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/moviesdb', {
   useNewUrlParser: true,
 });
+
+app.use(cors());
 
 app.use(express.json());
 
 app.use(limiter);
 app.use(helmet());
 
-app.use(requestLogger); // подключаем логгер запросов
+app.use(requestLogger);
 
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+  }),
+}), createUser);
 
-app.post('/signin', login);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), login);
 
 app.use(auth);
 
-app.use('/movies', routesMovies); // запускаем
+app.use('/movies', routesMovies);
 
 app.use('/users', routesUsers);
 
-app.use(errorLogger); // подключаем логгер ошибок
+app.use(errorLogger);
 
-app.use(cors());
+app.use(errors()); // обработчик ошибок celebrate
 
 app.use('*', (req, res, next) => {
   next(new ErrorNotFound('Неправильный путь'));
