@@ -3,7 +3,7 @@ const validator = require('validator'); // npm i validator
 /// const { default: isURL } = require('validator/lib/isurl');
 
 const moviesSchema = new mongoose.Schema({
-  countru: {
+  country: {
     type: String,
     required: true,
   },
@@ -67,7 +67,7 @@ const moviesSchema = new mongoose.Schema({
 
   movieId: {
     // у пользователя есть имя — опишем требования к имени в схеме:
-    type: mongoose.Schema.Types.ObjectId, // тип ObjectId
+    type: Number, // тип ObjectId
     required: true, // оно должно быть у каждого пользователя, так что имя — обязательное поле
     // ref: 'User',
   },

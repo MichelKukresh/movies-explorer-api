@@ -2,17 +2,18 @@ const Movies = require('../models/movie');
 
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorAuthorizedButForbidden = require('../errors/ErrorAuthorizedButForbidden');
+const ErrorValidationAndCast = require('../errors/ErrorValidationAndCast');
 
 module.exports.createMovie = (req, res, next) => {
   const
     {
-      countru, director, duration, year, description,
+      country, director, duration, year, description,
       image, trailerLink, thumbnail, nameRU, nameEN, movieId,
     } = req.body;
-  const owner = { _id: req.user._id };
+  const owner = req.user._id;
   Movies.create(
     {
-      countru,
+      country,
       director,
       duration,
       year,
@@ -25,8 +26,14 @@ module.exports.createMovie = (req, res, next) => {
       nameEN,
       movieId,
     },
-  ).then((card) => res.send({ data: card }))
-    .catch((err) => next(err));
+  ).then((movie) => res.send({ data: movie }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new ErrorValidationAndCast('Некорректные данные при создании карточки фильма'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.getMuSavedMovies = (req, res, next) => {

@@ -22,6 +22,8 @@ module.exports.createUser = (req, res, next) => {
     })).catch((err) => {
       if (err.code === 11000) {
         next(new ErrorEmailConflict('Пользователь уже существует'));
+      } else if (err.name === 'ValidationError') {
+        next(new ErrorValidationAndCast('Некорректные данные при создании пользователя'));
       } else {
         next(err);
       }
@@ -43,13 +45,15 @@ module.exports.infirmationAboutMe = (req, res, next) => {
 module.exports.updateUsers = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
-    { name: req.body.name, about: req.body.about },
+    { name: req.body.name, email: req.body.email },
     { runValidators: true, new: true },
   )
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ErrorValidationAndCast('Переданы некорректные данные при изменении данных пользователя'));
+      } else if (err.code === 11000) {
+        next(new ErrorEmailConflict('Указанный Email использует другой пользователь'));
       } else {
         next(err);
       }
