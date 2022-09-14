@@ -29,7 +29,7 @@ module.exports.createMovie = (req, res, next) => {
   ).then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ErrorValidationAndCast('Некорректные данные при создании карточки фильма'));
+        next(new ErrorValidationAndCast('Некорректные данные при создании карточки фильма .'));
       } else {
         next(err);
       }

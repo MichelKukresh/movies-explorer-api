@@ -9,19 +9,22 @@ routesMovies.post('/movies/', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
     director: Joi.string().required(),
-    duration: Joi.required(),
+    duration: Joi.number().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
     image: Joi.string().required().regex(regexLink),
     trailerLink: Joi.string().required().regex(regexLink),
     thumbnail: Joi.string().required().regex(regexLink),
-    owner: Joi.required(),
-    nameRU: Joi.required(),
+    nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
-    movieId: Joi.string().required(),
+    movieId: Joi.number().required(),
   }),
 }), createMovie);
 
-routesMovies.delete('/movies/:id', deleteMyMovie);
+routesMovies.delete('/movies/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().length(24).hex().required(),
+  }),
+}), deleteMyMovie);
 
 module.exports = routesMovies;
